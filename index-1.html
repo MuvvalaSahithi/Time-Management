@@ -1,0 +1,319 @@
+
+<!-- do not change the markup -->
+<a href="#">
+  Checkout
+</a><!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Student Smart Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{margin:0;font-family:Arial;background:#0f172a;color:white}
+
+.hidden{display:none}
+
+header{
+
+background:#020617;
+
+padding:15px;
+
+text-align:center;
+
+font-size:22px;
+
+}
+
+.card{
+
+background:#020617;
+
+margin:12px;
+
+padding:15px;
+
+border-radius:15px;
+
+}
+
+input,button{
+
+width:100%;
+
+padding:12px;
+
+margin-top:10px;
+
+border-radius:10px;
+
+border:none;
+
+}
+
+button{background:#2563eb;color:white}
+
+.circle{
+
+width:170px;height:170px;border-radius:50%;
+
+margin:auto;
+
+display:flex;flex-direction:column;
+
+align-items:center;justify-content:center;
+
+font-size:28px;font-weight:bold;
+
+}
+
+.green{background:#16a34a}
+
+.blue{background:#2563eb}
+
+.red{background:#dc2626}
+
+.task{
+
+margin-top:10px;
+
+padding:12px;
+
+border-radius:12px;
+
+display:flex;
+
+justify-content:space-between;
+
+}
+
+.smallBtn{background:none;color:white;border:none;font-size:18px}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginScreen" class="card">
+
+<h2>Login</h2>
+
+<input id="username" placeholder="Enter your name">
+
+<button onclick="doLogin()">Enter</button>
+
+</div>
+
+<!-- APP -->
+
+<div id="appScreen" class="hidden">
+
+<header id="welcome"></header>
+
+<div class="card">
+
+<div id="ring" class="circle green">
+
+<span id="percent">0%</span>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<input id="taskInput" placeholder="Task name">
+
+<input id="dateInput" type="date">
+
+<button onclick="addTask()">Add Task</button>
+
+</div>
+
+<div id="taskList" class="card"></div>
+
+<div class="card">
+
+<canvas id="chart"></canvas>
+
+</div>
+
+</div>
+
+<script>
+
+const loginScreen=document.getElementById("loginScreen");
+
+const appScreen=document.getElementById("appScreen");
+
+const welcome=document.getElementById("welcome");
+
+const ring=document.getElementById("ring");
+
+const percent=document.getElementById("percent");
+
+const taskList=document.getElementById("taskList");
+
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+
+function doLogin(){
+
+let name=document.getElementById("username").value;
+
+if(!name){alert("Enter name");return;}
+
+localStorage.setItem("user",name);
+
+loginScreen.style.display="none";
+
+appScreen.classList.remove("hidden");
+
+welcome.innerText="Welcome "+name;
+
+render();
+
+}
+
+if(localStorage.getItem("user")){
+
+loginScreen.style.display="none";
+
+appScreen.classList.remove("hidden");
+
+welcome.innerText="Welcome "+localStorage.getItem("user");
+
+}
+
+function daysLeft(d){
+
+return Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
+
+}
+
+function getColor(d){
+
+if(d>15)return"green";
+
+if(d>5)return"blue";
+
+return"red";
+
+}
+
+function addTask(){
+
+let t=document.getElementById("taskInput").value;
+
+let d=document.getElementById("dateInput").value;
+
+if(!t||!d){alert("Enter task & date");return;}
+
+tasks.push({t,d});
+
+localStorage.setItem("tasks",JSON.stringify(tasks));
+
+document.getElementById("taskInput").value="";
+
+render();
+
+}
+
+function render(){
+
+taskList.innerHTML="";
+
+let min=99;
+
+tasks.forEach((x,i)=>{
+
+let d=daysLeft(x.d);
+
+if(d<min)min=d;
+
+taskList.innerHTML+=`
+
+<div class="task ${getColor(d)}">
+
+${x.t} - ${d} days
+
+<button class="smallBtn" onclick="deleteTask(${i})">🗑</button>
+
+</div>`;
+
+});
+
+ring.className="circle "+getColor(min);
+
+percent.innerText=tasks.length?Math.max(0,100-min*5)+"%":"0%";
+
+drawChart();
+
+}
+
+function deleteTask(i){
+
+tasks.splice(i,1);
+
+localStorage.setItem("tasks",JSON.stringify(tasks));
+
+render();
+
+}
+
+function drawChart(){
+
+let g=0,b=0,r=0;
+
+tasks.forEach(x=>{
+
+let d=daysLeft(x.d);
+
+if(d>15)g++;else if(d>5)b++;else r++;
+
+});
+
+new Chart(document.getElementById("chart"),{
+
+type:"pie",
+
+data:{
+
+labels:["Green","Blue","Red"],
+
+datasets:[{data:[g,b,r]}]
+
+}
+
+});
+
+}
+
+render();
+
+</script>
+
+</body>
+
+</html>
+
+<!-- 
+1. make look like a button
+2. change text color red on hover
+
+Cannot change html, only css.
+Look closely at
+-->  
+
+<div></div>
+<div></div>
+<div></div>
